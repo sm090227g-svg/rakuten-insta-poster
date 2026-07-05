@@ -181,19 +181,35 @@ def post_to_instagram(image_url, caption):
 
 
 def update_landing_page(product):
-    """『今日のおすすめ』ページ用のJSONファイルを書き換える"""
+    """『今日のおすすめ』ページ用のデータに、今回の商品を履歴として追加する"""
     import datetime
     import json
+    import os
 
-    data = {
+    entry = {
         "name": product["name"],
-        "price": product["price"],
+        "price": int(product["price"]),
         "image_url": product["image_url"],
         "url": product["url"],
         "updated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
+
+    history_path = "docs/products.json"
+    if os.path.exists(history_path):
+        with open(history_path, encoding="utf-8") as f:
+            history = json.load(f)
+    else:
+        history = []
+
+    history.insert(0, entry)  # 新しいものを先頭に
+    history = history[:200]  # 増えすぎないように直近200件まで保持
+
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+    # 後方互換のため、最新1件も別ファイルに残す
     with open("docs/product-data.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(entry, f, ensure_ascii=False, indent=2)
 
 
 def main():
