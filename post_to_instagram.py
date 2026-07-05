@@ -133,6 +133,8 @@ def generate_caption(product):
         },
         timeout=30,
     )
+    if not resp.ok:
+        print(f"Anthropic APIエラー詳細: {resp.status_code} {resp.text}", file=sys.stderr)
     resp.raise_for_status()
     data = resp.json()
     caption = "".join(
@@ -155,6 +157,8 @@ def post_to_instagram(image_url, caption):
         },
         timeout=30,
     )
+    if not create_resp.ok:
+        print(f"Instagram(メディア作成)エラー詳細: {create_resp.status_code} {create_resp.text}", file=sys.stderr)
     create_resp.raise_for_status()
     creation_id = create_resp.json()["id"]
 
@@ -170,6 +174,8 @@ def post_to_instagram(image_url, caption):
         },
         timeout=30,
     )
+    if not publish_resp.ok:
+        print(f"Instagram(公開)エラー詳細: {publish_resp.status_code} {publish_resp.text}", file=sys.stderr)
     publish_resp.raise_for_status()
     return publish_resp.json()
 
