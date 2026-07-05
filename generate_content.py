@@ -80,7 +80,8 @@ def compose_card_image(product, out_path="docs/reel-card.png"):
         y += 70
 
     y += 30
-    draw.text((60, y), f"{product['price']:,}円", font=price_font, fill=RED)
+    price = int(product["price"])
+    draw.text((60, y), f"{price:,}円", font=price_font, fill=RED)
     y += 140
 
     draw.text(
