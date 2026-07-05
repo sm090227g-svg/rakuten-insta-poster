@@ -2,8 +2,10 @@ name: 楽天商品Instagram自動投稿
 
 on:
   schedule:
-    # 19:00 JST = 10:00 UTC(日本時間 午後7時)
-    - cron: "0 10 * * *"
+    # 12:00 JST = 03:00 UTC(お昼休み、視聴が伸びやすい時間帯)
+    - cron: "0 3 * * *"
+    # 20:00 JST = 11:00 UTC(夕食後、視聴が伸びやすい時間帯)
+    - cron: "0 11 * * *"
   workflow_dispatch: {} # 「Actions」タブから手動実行もできるようにする
 
 jobs:
