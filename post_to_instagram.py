@@ -145,7 +145,7 @@ def generate_caption(product):
 
 def post_to_instagram(image_url, caption):
     """Instagram Graph APIで画像投稿を作成→公開する"""
-    base = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{IG_USER_ID}"
+    base = f"https://graph.instagram.com/{GRAPH_API_VERSION}/{IG_USER_ID}"
 
     # ① メディアコンテナを作成
     create_resp = requests.post(
