@@ -41,5 +41,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/product-data.json docs/products.json
-          git diff --staged --quiet || git commit -m "ランディングページを更新"
-          git push
+          git diff --staged --quiet && exit 0
+          git commit -m "ランディングページを更新"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            echo "push失敗、再試行します($i回目)"
+            sleep 3
+          done
