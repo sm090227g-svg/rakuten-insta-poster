@@ -9,6 +9,8 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: リポジトリを取得
         uses: actions/checkout@v4
@@ -31,3 +33,11 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python post_to_instagram.py
+
+      - name: ランディングページの更新をリポジトリに反映
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/product-data.json
+          git diff --staged --quiet || git commit -m "ランディングページを更新"
+          git push
