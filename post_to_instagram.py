@@ -180,6 +180,22 @@ def post_to_instagram(image_url, caption):
     return publish_resp.json()
 
 
+def update_landing_page(product):
+    """『今日のおすすめ』ページ用のJSONファイルを書き換える"""
+    import datetime
+    import json
+
+    data = {
+        "name": product["name"],
+        "price": product["price"],
+        "image_url": product["image_url"],
+        "url": product["url"],
+        "updated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+    with open("docs/product-data.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 def main():
     print("① 楽天商品を取得中...")
     product = fetch_top_product()
@@ -196,6 +212,10 @@ def main():
     print("③ Instagramに投稿中...")
     result = post_to_instagram(product["image_url"], caption)
     print(f"   → 投稿完了 (media id: {result.get('id')})")
+
+    print("④ ランディングページを更新中...")
+    update_landing_page(product)
+    print("   → docs/product-data.json を更新しました")
 
 
 if __name__ == "__main__":
