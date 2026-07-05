@@ -76,7 +76,7 @@ def update_landing_page(product):
     """『今日のおすすめ』ページ用のJSONファイルを書き換える"""
     data = {
         "name": product["name"],
-        "price": product["price"],
+        "price": int(product["price"]),
         "image_url": product["image_url"],
         "url": product["url"],
         "updated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
