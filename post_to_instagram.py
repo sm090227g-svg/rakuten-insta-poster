@@ -3,7 +3,10 @@
 
 必要な環境変数(GitHub Secretsに登録):
   RAKUTEN_APP_ID       楽天アプリケーションID
+  RAKUTEN_ACCESS_KEY   楽天アクセスキー(2026年2月の仕様変更で追加された必須項目)
   RAKUTEN_AFFILIATE_ID 楽天アフィリエイトID
+  RAKUTEN_SITE_URL     楽天アプリ登録時に「許可されたウェブサイト」に登録したURL
+                       (例: https://sm090227g-svg.github.io/insta-rakuten-app/)
   IG_ACCESS_TOKEN      Instagram長期アクセストークン
   IG_USER_ID           InstagramビジネスアカウントID
   ANTHROPIC_API_KEY    Anthropic APIキー(キャプション生成用)
@@ -11,6 +14,13 @@
 任意で指定できる環境変数:
   RAKUTEN_GENRE_ID     楽天ジャンルID(未指定なら総合ランキング)
   RAKUTEN_KEYWORD      キーワード検索したい場合に指定(例: 外壁 塗装)
+
+【2026年2月の楽天API仕様変更について】
+楽天ウェブサービスは2026年2月に旧ドメイン(app.rakuten.co.jp)を廃止し、
+新ドメイン(openapi.rakuten.co.jp)に完全移行しました。
+新APIでは applicationId に加えて accessKey が必須になり、さらに
+アプリ登録時に「許可されたウェブサイト」として登録したドメインを
+Referer/Originヘッダーとして送る必要があります。
 """
 
 import os
@@ -19,7 +29,9 @@ import time
 import requests
 
 RAKUTEN_APP_ID = os.environ["RAKUTEN_APP_ID"]
+RAKUTEN_ACCESS_KEY = os.environ["RAKUTEN_ACCESS_KEY"]
 RAKUTEN_AFFILIATE_ID = os.environ["RAKUTEN_AFFILIATE_ID"]
+RAKUTEN_SITE_URL = os.environ["RAKUTEN_SITE_URL"].rstrip("/") + "/"
 IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 IG_USER_ID = os.environ["IG_USER_ID"]
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
@@ -29,15 +41,23 @@ RAKUTEN_KEYWORD = os.environ.get("RAKUTEN_KEYWORD", "")
 
 GRAPH_API_VERSION = "v21.0"
 
+# 楽天の新API(2026年2月以降)は、アプリ登録時に許可したサイトからのアクセスである
+# ことをReferer/Originヘッダーで確認するため、これを送る
+RAKUTEN_HEADERS = {
+    "Referer": RAKUTEN_SITE_URL,
+    "Origin": RAKUTEN_SITE_URL.rstrip("/"),
+}
+
 
 def fetch_top_product():
     """楽天ランキングAPI(キーワードがあれば商品検索API)から商品を1件取得する"""
     if RAKUTEN_KEYWORD:
         # キーワード検索(人気順)
-        url = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601"
+        url = "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401"
         params = {
             "format": "json",
             "applicationId": RAKUTEN_APP_ID,
+            "accessKey": RAKUTEN_ACCESS_KEY,
             "affiliateId": RAKUTEN_AFFILIATE_ID,
             "keyword": RAKUTEN_KEYWORD,
             "sort": "-reviewCount",
@@ -45,16 +65,17 @@ def fetch_top_product():
         }
     else:
         # 総合(またはジャンル指定)ランキング
-        url = "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20220601"
+        url = "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601"
         params = {
             "format": "json",
             "applicationId": RAKUTEN_APP_ID,
+            "accessKey": RAKUTEN_ACCESS_KEY,
             "affiliateId": RAKUTEN_AFFILIATE_ID,
             "genreId": RAKUTEN_GENRE_ID,
             "period": "realtime",
         }
 
-    resp = requests.get(url, params=params, timeout=15)
+    resp = requests.get(url, params=params, headers=RAKUTEN_HEADERS, timeout=15)
     resp.raise_for_status()
     data = resp.json()
 
